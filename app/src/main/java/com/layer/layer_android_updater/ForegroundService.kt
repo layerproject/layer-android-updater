@@ -89,8 +89,9 @@ class ForegroundService : Service() {
     private fun checkForUpdates() {
         Log.d("LayerUpdater", "Foreground service: checkForUpdates")
         Thread {
+            val remoteVersion = getRemoteAppVersion()
             if (getInstalledAppVersion() < getRemoteAppVersion()) {
-                upgradeAndRestart()
+                upgradeAndRestart(remoteVersion)
             }
         }.start()
     }
@@ -165,8 +166,8 @@ class ForegroundService : Service() {
         return Triple(-1,"", "")
     }
 
-    private fun upgradeAndRestart() {
-        val appFilename = "layer-android-display-staging-debug.apk"
+    private fun upgradeAndRestart(remoteVersion: Int) {
+        val appFilename = "layer-android-display-staging-debug-$remoteVersion.apk"
         val url = URL("https://layer-android.b-cdn.net/$appFilename")
         val apkFile = File(this.externalCacheDir, appFilename)
 
