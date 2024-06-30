@@ -1,11 +1,9 @@
 package com.layer.layer_android_updater
 
-import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -74,7 +72,7 @@ class ForegroundService : Service() {
 
     private fun disableGoogleServices() {
         val disableGoogleServicesCommand = "pm disable-user --user 0 com.google.android.gms"
-        val disableGoogleServicesResult = runCommand(disableGoogleServicesCommand, true)
+        val disableGoogleServicesResult = runCommand(disableGoogleServicesCommand)
         Log.d("LayerUpdater", "Disable Google services result: $disableGoogleServicesResult")
     }
 
@@ -127,15 +125,9 @@ class ForegroundService : Service() {
         return response
     }
 
-    private fun runCommand(command: String, asRoot: Boolean = false): Triple<Int, String, String> {
+    private fun runCommand(command: String): Triple<Int, String, String> {
         try {
-            val wrappedCommand: Array<String>;
-
-            if (!asRoot) {
-                wrappedCommand = arrayOf("sh", "-c", command)
-            } else {
-                wrappedCommand = arrayOf("su", "root", "sh", "-c", command)
-            }
+            val wrappedCommand = arrayOf("su", "root", "sh", "-c", command)
 
             Log.d("LayerUpdater", "Wrapped command: ${wrappedCommand.joinToString(" ")}")
             val process = Runtime.getRuntime().exec(wrappedCommand)
@@ -174,7 +166,7 @@ class ForegroundService : Service() {
     }
 
     private fun upgradeAndRestart() {
-        val appFilename = "app-staging-debug.apk"
+        val appFilename = "layer-android-display-staging-debug.apk"
         val url = URL("https://layer-android.b-cdn.net/$appFilename")
         val apkFile = File(this.externalCacheDir, appFilename)
 
@@ -207,16 +199,16 @@ class ForegroundService : Service() {
         }
 
         val installCommand = "pm install -r ${apkFile.absolutePath}"
-        val installResult = runCommand(installCommand, true)
+        val installResult = runCommand(installCommand)
         Log.d("LayerUpdater", "Install APK result: $installResult")
 
         if (installResult.first == 0) {
             val forceStopCommand = "am force-stop $packageName"
-            val forceStopResult = runCommand(forceStopCommand, true)
+            val forceStopResult = runCommand(forceStopCommand)
             Log.d("LayerUpdater", "Force stop result: $forceStopResult")
 
             val runCommand = "monkey -p $packageName -c android.intent.category.LAUNCHER 1"
-            val runResult = runCommand(runCommand, true)
+            val runResult = runCommand(runCommand)
             Log.d("LayerUpdater", "Run result: $runResult")
         }
     }

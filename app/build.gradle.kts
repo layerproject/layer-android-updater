@@ -49,6 +49,14 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val fileName = "layer-android-updater-${name}.apk"
+            output.outputFileName = fileName
+        }
+    }
 }
 
 dependencies {
